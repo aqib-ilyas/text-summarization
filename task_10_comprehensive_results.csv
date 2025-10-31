@@ -1,6 +1,0 @@
-Method,Metric,Average,Std Dev,Min,Max
-Frequency,Rouge-L,0.1740,0.1015,0.0000,0.5455
-TF-IDF,Rouge-L,0.1728,0.1149,0.0000,0.5455
-LexRank,Rouge-L,0.2459,0.1532,0.0000,0.8889
-TextRank,Rouge-L,0.1502,0.0877,0.0000,0.5455
-T5,Rouge-L,0.2183,0.1127,0.0000,0.5238
