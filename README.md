@@ -1,201 +1,232 @@
-# arXiv Text Summarization Project
+# arXiv Text Summarization: Comparative Analysis
 
-Yo, this project implements and compares 5 different text summarization methods on arXiv research paper abstracts. Because apparently one method wasn't enough.
+This project implements and evaluates five different text summarization approaches on arXiv research paper abstracts, comparing their performance using six complementary evaluation metrics.
 
-## What This Does
+## Overview
 
-Takes arXiv paper abstracts and generates single-sentence summaries using:
+The project generates single-sentence extractive summaries from arXiv paper abstracts and evaluates them against article titles using multiple similarity metrics. This enables a comprehensive comparison of traditional NLP techniques versus modern transformer-based approaches.
 
--   Frequency-based (the OG simple approach)
--   TF-IDF (slightly less simple)
--   LexRank (graph-based, fancy)
--   TextRank (also graph-based, slightly different flavor)
--   T5 Transformer (the heavy hitter)
+## Summarization Methods
 
-Then compares them all using Rouge-L, Jaccard similarity, and FuzzyWuzzy scores.
+1. **Frequency-Based** - Selects sentences containing the most frequent meaningful words
+2. **TF-IDF** - Identifies sentences with the highest term frequency-inverse document frequency scores
+3. **LexRank** - Graph-based algorithm using sentence similarity and centrality
+4. **TextRank** - PageRank-inspired approach for sentence importance
+5. **T5 Transformer** - Pre-trained sequence-to-sequence model for abstractive summarization
+
+## Evaluation Metrics
+
+Each summary is evaluated using six metrics:
+
+- **FuzzyWuzzy Score** - Token-based string similarity
+- **Modified Jaccard Similarity** - Ratio of common tokens to total unique tokens
+- **FastText Cosine Similarity** - Semantic similarity using word embeddings
+- **ROUGE-1** - Unigram overlap
+- **ROUGE-2** - Bigram overlap
+- **ROUGE-L** - Longest common subsequence
 
 ## Project Structure
 
 ```
 project/
 ├── data/
-│   └── arxiv-metadata-oai-snapshot.json    # Your dataset (not included, too big)
-├── summarization.py                         # Main code
-├── README.md                                # You're reading it
-└── output files (generated after running):
-    ├── task_2-4_frequency_scores.csv
-    ├── task_10_comprehensive_results.csv
-    └── all_summaries_detailed.csv
+│   └── arxiv-metadata-oai-snapshot.json    # Dataset (not included)
+├── main.py                                  # Main implementation
+├── requirements.txt                         # Python dependencies
+├── README.md                                # This file
+├── results_frequency.csv                    # result files:
+├── results_tfidf.csv
+├── results_lexrank.csv
+├── results_textrank.csv
+├── results_t5.csv
+├── comprehensive_statistics.csv
+├── comparison_plots.png
+└── overall_comparison.png
 ```
 
-## Setup
+## Installation
 
-### 1. Install Python Dependencies
+### Install Dependencies
 
-```bash
-pip install pandas numpy nltk fuzzywuzzy python-Levenshtein gensim scikit-learn rouge-score sumy transformers torch
-```
-
-Or if you're lazy (recommended):
+use the requirements file:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Get the Dataset
+### Download Dataset
 
-Download the arXiv dataset from: https://www.kaggle.com/datasets/Cornell-University/arxiv/data
+1. Download the arXiv dataset from [Kaggle](https://www.kaggle.com/datasets/Cornell-University/arxiv)
+2. Place `arxiv-metadata-oai-snapshot.json` in a `data/` directory
 
-Put the `arxiv-metadata-oai-snapshot.json` file in a `data/` folder.
+## Usage
 
-### 3. Run It
+Run the main script:
 
 ```bash
-python summarization.py
+python main.py
 ```
 
-Grab a coffee. The T5 model takes forever to download and run. First time running will also download NLTK data and FastText embeddings.
+The script will:
+1. Load 100 arXiv abstracts (configurable)
+2. Generate summaries using all five approaches
+3. Evaluate each summary with six metrics
+4. Save individual results for each approach
+5. Perform comprehensive statistical analysis
+6. Generate comparison visualizations
 
-## What Each Task Does
+**Note**: First execution will download NLTK data (~50MB), FastText embeddings (~1GB), and T5 model (~250MB).
 
-### Task 1: Frequency-Based Summarizer
+## Configuration
 
-Counts word frequencies, picks the sentence with most important words. Simple but surprisingly effective.
+To process a different number of articles, modify the following line in `main.py`:
 
-### Task 2: Fuzzy Matching
+```python
+abstracts, titles = load_arxiv_data(
+    'data/arxiv-metadata-oai-snapshot.json', n_samples=100)
+```
 
-Compares generated summaries to titles using:
+Change `n_samples=100` to your desired value.
 
--   Modified Jaccard similarity (set intersection/union)
--   FuzzyWuzzy token matching
+For GPU acceleration with T5, change:
 
-### Task 3: FastText Embeddings
+```python
+device=-1  # CPU
+```
 
-Uses pre-trained word embeddings to calculate cosine similarity between summary and title. More semantic than just word matching.
+to:
 
-### Task 4: Rouge-L Evaluation
-
-Standard summarization metric. Measures longest common subsequence.
-
-### Task 5: TF-IDF Summarizer
-
-Term Frequency-Inverse Document Frequency. Picks sentences with distinctive vocabulary.
-
-### Task 6: Evaluate TF-IDF
-
-Same metrics as Task 4 but for TF-IDF summaries.
-
-### Task 7: Sumy Library
-
-Uses pre-built implementations of LexRank and TextRank. Because why reinvent the wheel?
-
-### Task 8: Evaluate Sumy
-
-Metrics for LexRank and TextRank summaries.
-
-### Task 9: T5 Transformer
-
-The big boy. Uses Google's T5 model for abstractive summarization. Can generate new sentences instead of just extracting existing ones.
-
-### Task 10: Results Table
-
-Compares all methods side-by-side. Shows average, std dev, min, max for each.
-
-### Task 11: Analysis
-
-Written commentary on results and limitations. Required because the professor wants to see if you actually understand what you're doing.
+```python
+device=0  # GPU
+```
 
 ## Output Files
 
-### `task_2-4_frequency_scores.csv`
+### Individual Approach Results
+- `results_frequency.csv` - Frequency-based method results with all metrics
+- `results_tfidf.csv` - TF-IDF method results
+- `results_lexrank.csv` - LexRank method results
+- `results_textrank.csv` - TextRank method results
+- `results_t5.csv` - T5 transformer method results
 
-Detailed results for frequency-based method including all metrics.
+Each file contains:
+- Article ID, title, abstract
+- Generated summary
+- All six evaluation scores
 
-### `task_10_comprehensive_results.csv`
+### Analysis Files
+- `comprehensive_statistics.csv` - Statistical summary (mean, std dev, min, max) for all approaches
+- `comparison_plots.png` - Six-panel visualization comparing approaches across metrics
+- `overall_comparison.png` - Overall performance comparison
 
-Summary table comparing all 5 methods.
+## Expected Performance
 
-### `all_summaries_detailed.csv`
+ROUGE-L scores typically range from 0.20 to 0.40 for this task, which is normal given:
+- Technical nature of arXiv abstracts
+- Domain-specific terminology
+- Article titles are not comprehensive summaries
+- Single-sentence constraint
 
-Every summary from every method plus their scores. The mother lode.
-
-## Expected Results
-
-Don't expect miracles. arXiv abstracts are technical AF and titles are often cryptic. Your Rouge-L scores will probably be in the 0.2-0.4 range. That's normal.
-
-**Best performers** (usually):
-
-1. T5 - if it doesn't choke on the jargon
-2. LexRank/TextRank - good balance
-3. TF-IDF - solid middle ground
-4. Frequency - surprisingly competitive
-5. Your patience - completely destroyed
+Expected performance ranking:
+1. T5 Transformer (highest semantic understanding)
+2. LexRank/TextRank (balanced graph-based approaches)
+3. TF-IDF (good distinctive term identification)
+4. Frequency-based (competitive baseline)
 
 ## Troubleshooting
 
-### "Resource punkt_tab not found"
+### Missing NLTK Resources
 
-The code downloads it automatically. If it still fails, manually run:
+If you encounter NLTK resource errors:
 
 ```python
 import nltk
+nltk.download('punkt')
 nltk.download('punkt_tab')
+nltk.download('stopwords')
 ```
 
-### "No module named 'transformers'"
+### Memory Issues
+
+Reduce the number of samples:
+
+```python
+n_samples=50  # or smaller
+```
+
+### Slow T5 Processing
+
+- Expected processing time: 10-20 minutes for 100 articles on CPU
+- Use GPU acceleration if available
+- Reduce sample size for testing
+
+### Import Errors
+
+Ensure all dependencies are installed:
 
 ```bash
-pip install transformers torch
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
-### T5 is slow AF
+## Implementation Details
 
-Yeah. It is. That's transformers for you. Run on GPU if you can (change `device=-1` to `device=0` in the code). Otherwise go make a sandwich.
+### Evaluation Suite
 
-### "FileNotFoundError: data/arxiv-metadata-oai-snapshot.json"
-
-You didn't download the dataset. See Setup step 2.
-
-### Out of memory
-
-The script only loads 100 papers by default. If even that's too much, change `n_samples=100` to something smaller in the code.
-
-## Customization
-
-Want more papers? Change this line in `summarization.py`:
+The `EvaluationSuite` class provides a unified interface for all metrics:
 
 ```python
-abstracts, titles = load_arxiv_data('data/arxiv-metadata-oai-snapshot.json', n_samples=100)
+eval_suite = EvaluationSuite()
+scores = eval_suite.evaluate(summary, title)
+# Returns: {fuzzy_score, jaccard_score, fasttext_score, 
+#           rouge1_score, rouge2_score, rougeL_score}
 ```
 
-Change `n_samples=100` to whatever you want. But be warned: T5 will take FOREVER with more samples.
+### Summarization Approaches
 
-Want different T5 settings? Modify this:
+All summarizers follow a consistent interface:
 
 ```python
-summary = summarizer(input_text, max_length=30, min_length=10, do_sample=False)
+summarizer = SummarizationApproaches()
+summary = summarizer.method_name(abstract)
 ```
 
-## Requirements
+### Analysis Function
 
--   Python 3.7+
--   4GB+ RAM (8GB recommended for T5)
--   Internet connection (first run downloads models)
--   Patience (seriously)
+The `analyze_results()` function:
+- Loads all result files
+- Computes comprehensive statistics
+- Generates visualizations
+- Identifies best-performing approaches per metric
 
-## Notes
+## Limitations
 
--   First run downloads ~1GB of models (FastText + T5)
--   Processing 100 papers takes 10-20 minutes depending on your hardware
--   Rouge-L scores between 0.2-0.4 are normal for this task
--   The code handles errors gracefully and will skip methods if dependencies fail
+- **Extractive constraint**: Methods primarily select existing sentences (except T5)
+- **Single sentence**: Significant context loss compared to multi-sentence summaries
+- **Domain specificity**: Performance varies with scientific domain
+- **Evaluation bias**: ROUGE favors lexical overlap over semantic similarity
+- **No fine-tuning**: T5 not adapted to scientific abstracts
+
+
+## References
+
+- **Dataset**: [arXiv Dataset on Kaggle](https://www.kaggle.com/datasets/Cornell-University/arxiv)
+- **LexRank**: Erkan & Radev (2004)
+- **TextRank**: Mihalcea & Tarau (2004)
+- **ROUGE**: Lin (2004)
+- **T5**: Raffel et al. (2020)
+- **Sumy Library**: [Documentation](https://github.com/miso-belica/sumy)
 
 ## License
 
-MIT or whatever. It's a class project. Do what you want with it.
+MIT License
 
 ## Author
 
-Someone who had to do this NLP project and now you're benefiting from it. You're welcome.
+Hasaan Ahmed, Aqib Ilyas and Minhal Shafiq (2025)
 
----
+## Acknowledgments
+
+- Cornell University for the arXiv dataset
+- Hugging Face for transformer implementations
+- Contributors to NLTK, Gensim, and Sumy libraries
